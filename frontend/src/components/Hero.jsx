@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CITIES } from '../data/mockData';
 
 export default function Hero({ onCitySelect, selectedCity }) {
-  const [query, setQuery]         = useState('');
+  const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
 
   const handleInput = (e) => {
@@ -18,7 +18,11 @@ export default function Hero({ onCitySelect, selectedCity }) {
     setQuery(city.name);
     setSuggestions([]);
     onCitySelect(city.id);
-    document.getElementById('housing')?.scrollIntoView({ behavior: 'smooth' });
+
+    // Wait a brief moment for React to render the housing section before scrolling
+    setTimeout(() => {
+      document.getElementById('housing')?.scrollIntoView({ behavior: 'smooth' });
+    }, 500);
   };
 
   const handleSearch = (e) => {

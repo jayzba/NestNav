@@ -13,6 +13,17 @@ export default function App() {
 
   // Highlight active nav link based on scroll position
   useEffect(() => {
+    // Force page to load at the very top on refresh
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+    
+    // Clear any lingering #hash from the URL
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
     const sections = ['hero', 'housing', 'map', 'traffic'];
     const observer = new IntersectionObserver(
       entries => {
