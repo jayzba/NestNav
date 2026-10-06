@@ -1,0 +1,33 @@
+name: Sync housing data
+
+# Refreshes the cached HUD housing data in Firestore once a day (HUD only
+# publishes new Fair Market Rents once a year, so daily is plenty).
+# Needs repo secrets: FIREBASE_SERVICE_ACCOUNT, HUD_API_TOKEN.
+on:
+  schedule:
+    - cron: '23 9 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-housing
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: collector
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: collector/package-lock.json
+      - run: npm ci
+      - run: node collect.js housing
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          HUD_API_TOKEN: ${{ secrets.HUD_API_TOKEN }}

@@ -1,54 +1,44 @@
 import { useState, useEffect } from 'react';
-import { HOUSING_DATA, CITIES } from '../data/mockData';
+import { CITIES } from '../data/mockData';
+import { loadCityHousing } from '../lib/housing';
+import { fetchCachedHousing } from '../api/firestoreCache';
 
 // ============================================================
-// useHousingData — fetches city housing data
-// Currently uses mock data; swap fetch() calls with real
-// HUD User API endpoints once you have a bearer token.
+// useHousingData — housing data for a city
 //
-// Required API Keys:
-//   HUD User API token — https://www.huduser.gov/portal/home.html
-//   After signing in, go to "API Keys" to generate a free token.
-//
-// HUD Fair Market Rents endpoint:
-//   GET https://www.huduser.gov/hudapi/public/fmr/statedata/{statecode}
-//   Header: Authorization: Bearer YOUR_TOKEN
+// 1. Reads the pre-computed document from Firestore (housing/{cityId}),
+//    kept fresh by the daily collector job. One read, no HUD calls.
+// 2. If that's missing, falls back to calling the HUD API directly
+//    (needs VITE_HUD_API_TOKEN in frontend/.env).
 // ============================================================
+
+async function getCityHousing(cityId) {
+  const cached = await fetchCachedHousing(cityId);
+  if (cached?.fiscalYear) return cached;
+  return loadCityHousing(cityId);
+}
+
 export function useHousingData(cityId) {
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
+  // City whose fetch (success or failure) most recently finished
+  const [loadedCityId, setLoadedCityId] = useState(null);
 
   useEffect(() => {
     if (!cityId) { setLoading(false); return; }
+    let cancelled = false;
     setLoading(true);
     setError(null);
 
-    // Simulate async API call
-    const timer = setTimeout(() => {
-      const result = HOUSING_DATA[cityId];
-      if (result) {
-        setData(result);
-      } else {
-        setError('City data not available.');
-      }
-      setLoading(false);
-    }, 600);
+    getCityHousing(cityId)
+      .then(result => { if (!cancelled) { setData(result); setLoading(false); setLoadedCityId(cityId); } })
+      .catch(e => { if (!cancelled) { setData(null); setError(e.message); setLoading(false); setLoadedCityId(cityId); } });
 
-    return () => clearTimeout(timer);
-
-    /* ── REAL HUD API CALL (uncomment when you have a token) ──
-    const HUD_TOKEN = import.meta.env.VITE_HUD_API_TOKEN;
-    fetch(`https://www.huduser.gov/hudapi/public/fmr/statedata/${stateCode}`, {
-      headers: { Authorization: `Bearer ${HUD_TOKEN}` }
-    })
-      .then(r => r.json())
-      .then(json => { setData(json.data); setLoading(false); })
-      .catch(e  => { setError(e.message);  setLoading(false); });
-    */
+    return () => { cancelled = true; };
   }, [cityId]);
 
-  return { data, loading, error };
+  return { data, loading, error, loadedCityId };
 }
 
 export { CITIES };

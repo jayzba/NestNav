@@ -6,7 +6,7 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import { useHousingData, CITIES } from '../hooks/useHousingData';
-import { MONTHS } from '../data/mockData';
+import { UNITS } from '../data/units';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler);
 
@@ -23,9 +23,14 @@ const AFFORD_COLOR = '#34d399';
 const MODERATE_COLOR = '#fbbf24';
 const EXPENSIVE_COLOR = '#f87171';
 
-export default function HousingSection({ cityId }) {
-  const { data, loading } = useHousingData(cityId);
+export default function HousingSection({ cityId, onReady, unit, onUnitChange }) {
+  const { data, loading, error, loadedCityId } = useHousingData(cityId);
   const cityName = CITIES.find(c => c.id === cityId)?.name ?? '';
+
+  // Tell the parent once this city's data (or error) is on screen
+  useEffect(() => {
+    if (cityId && loadedCityId === cityId) onReady?.();
+  }, [cityId, loadedCityId]);
 
   if (!cityId) return (
     <section id="housing" className="section">
@@ -33,6 +38,16 @@ export default function HousingSection({ cityId }) {
         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏙️</div>
         <h2 className="section-title">Housing Cost Overview</h2>
         <p style={{ color: 'var(--color-text-muted)' }}>Search for a city above to see housing data.</p>
+      </div>
+    </section>
+  );
+
+  if (error) return (
+    <section id="housing" className="section">
+      <div className="section-inner" style={{ textAlign: 'center', padding: '4rem 0' }}>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⚠️</div>
+        <h2 className="section-title">Housing Cost Overview</h2>
+        <p style={{ color: 'var(--color-text-muted)' }}>Couldn't load HUD data: {error}</p>
       </div>
     </section>
   );
@@ -51,31 +66,44 @@ export default function HousingSection({ cityId }) {
     </section>
   );
 
+  const selectedIdx = UNITS.findIndex(u => u.key === unit);
+  const selectedUnit = UNITS[selectedIdx];
+
   const fmrBarData = {
-    labels: ['Studio', '1 Bedroom', '2 Bedroom', '3 Bedroom'],
+    labels: UNITS.map(u => u.label),
     datasets: [{
       label: 'Fair Market Rent ($/mo)',
-      data: [data.fmr.studio, data.fmr.oneBed, data.fmr.twoBed, data.fmr.threeBed],
-      backgroundColor: [
-        'rgba(78,141,245,0.7)',
-        'rgba(124,110,247,0.7)',
-        'rgba(52,211,153,0.7)',
-        'rgba(251,191,36,0.7)',
-      ],
+      data: UNITS.map(u => data.fmr[u.key]),
+      // Selected bar is solid, the rest are dimmed
+      backgroundColor: UNITS.map((u, i) => (i === selectedIdx ? u.color : u.color.replace(/[\d.]+\)$/, '0.3)'))),
+      borderColor: UNITS.map(u => u.color.replace(/[\d.]+\)$/, '1)')),
+      borderWidth: UNITS.map((_, i) => (i === selectedIdx ? 2 : 0)),
       borderRadius: 8,
       borderSkipped: false,
     }],
   };
 
+  const fmrBarOptions = {
+    ...CHART_DEFAULTS,
+    responsive: true,
+    maintainAspectRatio: false,
+    onClick: (_evt, elements) => {
+      if (elements.length) onUnitChange(UNITS[elements[0].index].key);
+    },
+    onHover: (evt, elements) => {
+      evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+    },
+  };
+
   const trendLineData = {
-    labels: MONTHS,
+    labels: data.trendLabels,
     datasets: [{
-      label: 'Avg. Rent ($/mo)',
-      data: data.rentTrend,
-      borderColor: '#4e8df5',
-      backgroundColor: 'rgba(78,141,245,0.1)',
+      label: `${selectedUnit.label} FMR ($/mo)`,
+      data: data.rentTrend[unit],
+      borderColor: selectedUnit.line,
+      backgroundColor: selectedUnit.line + '1a',
       borderWidth: 2,
-      pointBackgroundColor: '#4e8df5',
+      pointBackgroundColor: selectedUnit.line,
       pointRadius: 4,
       fill: true,
       tension: 0.4,
@@ -92,7 +120,7 @@ export default function HousingSection({ cityId }) {
         <p className="section-label">📊 HUD Fair Market Rents</p>
         <h2 className="section-title">Housing Costs in {cityName}</h2>
         <p className="section-subtitle">
-          Rental data sourced from the U.S. Dept. of Housing and Urban Development (HUD).
+          Rental data sourced from the U.S. Dept. of Housing and Urban Development (HUD), fiscal year {data.fiscalYear}.
         </p>
 
         {/* Affordability Index */}
@@ -145,15 +173,15 @@ export default function HousingSection({ cityId }) {
         <div className="housing-grid">
           <div className="card">
             <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: '1.25rem', fontSize: '1rem' }}>
-              Fair Market Rents by Unit Size
+              Fair Market Rents by Unit Size <span style={{ fontWeight: 400, fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>(click a bar)</span>
             </h3>
             <div className="chart-container">
-              <Bar data={fmrBarData} options={{ ...CHART_DEFAULTS, responsive: true, maintainAspectRatio: false }} />
+              <Bar data={fmrBarData} options={fmrBarOptions} />
             </div>
           </div>
           <div className="card">
             <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: '1.25rem', fontSize: '1rem' }}>
-              12-Month Rent Trend
+              {selectedUnit.label} Rent Trend (HUD, by Fiscal Year)
             </h3>
             <div className="chart-container">
               <Line data={trendLineData} options={{ ...CHART_DEFAULTS, responsive: true, maintainAspectRatio: false }} />

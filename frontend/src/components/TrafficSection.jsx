@@ -2,56 +2,59 @@ import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { useTrafficData } from '../hooks/useTrafficData';
 import { CITIES } from '../data/mockData';
+import TrafficProfile from './TrafficProfile';
 
 const STATUS_LABEL = { good: 'Normal', moderate: 'Delays', bad: 'Disrupted' };
 
 export default function TrafficSection({ cityId }) {
-  const { data, loading } = useTrafficData(cityId);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const { data, loading, error } = useTrafficData(cityId);
   const cityName = CITIES.find(c => c.id === cityId)?.name ?? '';
-
-  useEffect(() => {
-    if (!loading && data) setLastUpdated(new Date());
-  }, [data]);
+  const lastUpdated = data ? new Date(data.fetchedAt) : new Date();
 
   const metrics = data ? [
     {
       id: 'avg-commute',
       icon: '⏱️',
-      label: 'Avg. Commute Time',
+      label: 'Avg. Drive to Downtown',
       value: data.avgCommute.value,
-      unit: 'min',
+      unit: data.avgCommute.unit,
       status: data.avgCommute.status,
     },
     {
-      id: 'delayed-routes',
-      icon: '⚠️',
-      label: 'Delayed Routes',
-      value: data.delayedRoutes.value,
-      unit: 'routes',
-      status: data.delayedRoutes.status,
+      id: 'traffic-delay',
+      icon: '🚦',
+      label: 'Traffic Delay',
+      value: data.delay.value,
+      unit: data.delay.unit,
+      status: data.delay.status,
     },
     {
-      id: 'active-buses',
-      icon: '🚌',
-      label: 'Buses Active Now',
-      value: data.activeBuses.value,
-      unit: 'active',
-      status: data.activeBuses.status,
+      id: 'slowest-commute',
+      icon: '🐢',
+      label: 'Slowest Commute',
+      value: data.slowest.value,
+      unit: data.slowest.unit,
+      status: data.slowest.status,
     },
   ] : [];
 
-  // Build a sparkline out of last 10 simulated readings
-  const [history, setHistory] = useState([24, 23, 25, 22, 26, 24, 27, 23, 24, 25]);
+  // Sparkline of real readings collected while this city is selected
+  const [history, setHistory] = useState([]);
+  useEffect(() => { setHistory([]); }, [cityId]);
   useEffect(() => {
-    if (data) setHistory(h => [...h.slice(-9), Number(data.avgCommute.value)]);
-  }, [data?.avgCommute?.value]);
+    if (data) {
+      setHistory(h => [...h.slice(-9), {
+        time: new Date(data.fetchedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+        value: Number(data.avgCommute.value),
+      }]);
+    }
+  }, [data?.fetchedAt]);
 
   const sparkData = {
-    labels: history.map((_, i) => `T-${history.length - 1 - i}m`),
+    labels: history.map(h => h.time),
     datasets: [{
       label: 'Commute (min)',
-      data: history,
+      data: history.map(h => h.value),
       borderColor: '#4e8df5',
       backgroundColor: 'rgba(78,141,245,0.08)',
       borderWidth: 2,
@@ -81,7 +84,12 @@ export default function TrafficSection({ cityId }) {
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚇</div>
             <p>No city selected yet.</p>
           </div>
-        ) : loading ? (
+        ) : error ? (
+          <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--color-text-muted)' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>⚠️</div>
+            <p>Couldn't load live traffic: {error}</p>
+          </div>
+        ) : loading || !data ? (
           <div style={{ textAlign: 'center', padding: '3rem 0' }}>
             <div style={{
               width: 40, height: 40, borderRadius: '50%',
@@ -116,7 +124,7 @@ export default function TrafficSection({ cityId }) {
             {/* Commute Sparkline */}
             <div className="card" style={{ marginTop: '0.25rem' }}>
               <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem' }}>
-                Commute Time History (Last 10 Readings)
+                Commute Time History (Last 10 Readings, every 5 min)
               </h3>
               <div style={{ height: 200 }}>
                 <Line
@@ -132,7 +140,8 @@ export default function TrafficSection({ cityId }) {
                       y: {
                         ticks: { color: '#4a6080', font: { size: 11 }, callback: v => `${v}m` },
                         grid: { color: 'rgba(99,155,255,0.05)' },
-                        min: 10, max: 45,
+                        suggestedMin: 0,
+                        beginAtZero: true,
                       },
                     },
                   }}
@@ -140,9 +149,12 @@ export default function TrafficSection({ cityId }) {
               </div>
             </div>
 
+            {/* Stored history: typical commute by time of day (Firestore) */}
+            <TrafficProfile cityId={cityId} />
+
             {/* Disclaimer */}
             <p style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-              🔌 Demo mode: data refreshes every 30 seconds with simulated variance. Wire in your city's GTFS Realtime feed to show true live data.
+              📡 Live driving times from Mapbox (neighborhoods → city center), refreshed every 5 minutes. Transit delays aren't included — add your city's GTFS Realtime feed for that.
             </p>
           </>
         )}

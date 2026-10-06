@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar.jsx';
 import Hero from './components/Hero.jsx';
 import HousingSection from './components/HousingSection.jsx';
@@ -10,6 +10,12 @@ export default function App() {
   const [cityId, setCityId]                     = useState(null);
   const [selectedNeighborhood, setNeighborhood] = useState(null);
   const [activeSection, setActiveSection]       = useState('hero');
+  const [unit, setUnit]                           = useState('oneBed'); // apartment size shown in charts + map
+  const cityIdRef                                = useRef(null);
+  const pendingScroll                            = useRef(false);
+
+  const scrollToHousing = () =>
+    document.getElementById('housing')?.scrollIntoView({ behavior: 'smooth' });
 
   // Highlight active nav link based on scroll position
   useEffect(() => {
@@ -40,9 +46,23 @@ export default function App() {
     return () => observer.disconnect();
   }, []);
 
-  const handleCitySelect = (id) => {
+  // `scroll: true` (search bar) defers the scroll until HousingSection reports
+  // its data has loaded, so the layout has stopped growing before we scroll.
+  const handleCitySelect = (id, { scroll = false } = {}) => {
+    if (scroll && id === cityIdRef.current) {
+      scrollToHousing(); // same city re-selected: data is already on screen
+    } else {
+      pendingScroll.current = scroll;
+    }
+    cityIdRef.current = id;
     setCityId(id);
     setNeighborhood(null);
+  };
+
+  const handleHousingReady = () => {
+    if (!pendingScroll.current) return;
+    pendingScroll.current = false;
+    scrollToHousing();
   };
 
   return (
@@ -55,9 +75,11 @@ export default function App() {
 
       <main>
         <Hero onCitySelect={handleCitySelect} selectedCity={cityId} />
-        <HousingSection cityId={cityId} />
+        <HousingSection cityId={cityId} onReady={handleHousingReady} unit={unit} onUnitChange={setUnit} />
         <MapSection
           cityId={cityId}
+          unit={unit}
+          onUnitChange={setUnit}
           selectedNeighborhood={selectedNeighborhood}
           onNeighborhoodSelect={setNeighborhood}
         />

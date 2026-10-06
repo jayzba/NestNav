@@ -1,0 +1,19 @@
+{
+  "name": "nestnav-collector",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Scheduled jobs (run by GitHub Actions) that write traffic history and cached HUD data to Firestore.",
+  "scripts": {
+    "traffic": "node collect.js traffic",
+    "housing": "node collect.js housing",
+    "traffic:dry": "node collect.js traffic --dry-run",
+    "housing:dry": "node collect.js housing --dry-run"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

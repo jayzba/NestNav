@@ -17,12 +17,8 @@ export default function Hero({ onCitySelect, selectedCity }) {
   const handleSelect = (city) => {
     setQuery(city.name);
     setSuggestions([]);
-    onCitySelect(city.id);
-
-    // Wait a brief moment for React to render the housing section before scrolling
-    setTimeout(() => {
-      document.getElementById('housing')?.scrollIntoView({ behavior: 'smooth' });
-    }, 500);
+    // App scrolls to the housing section once its data has finished loading
+    onCitySelect(city.id, { scroll: true });
   };
 
   const handleSearch = (e) => {

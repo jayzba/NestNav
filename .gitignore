@@ -25,3 +25,7 @@ dist-ssr/
 *.sw?
 
 .env
+
+# Firebase service-account keys (used only as a GitHub Actions secret)
+*-firebase-adminsdk-*.json
+serviceAccount*.json

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useHousingData, CITIES } from '../hooks/useHousingData';
+import { UNITS } from '../data/units';
 
 const AFFORD_COLOR = '#34d399';
 const MODERATE_COLOR = '#fbbf24';
@@ -22,14 +23,19 @@ function MapFlyTo({ center }) {
   return null;
 }
 
-export default function MapSection({ cityId, onNeighborhoodSelect, selectedNeighborhood }) {
+export default function MapSection({ cityId, unit, onUnitChange, onNeighborhoodSelect, selectedNeighborhood }) {
   const { data, loading } = useHousingData(cityId);
   const city = CITIES.find(c => c.id === cityId);
   const [filter, setFilter] = useState('all');
+  const [showTraffic, setShowTraffic] = useState(true);
+  // navigation-night-v1 renders Mapbox's live traffic colors; dark-v11 is the traffic-free equivalent
+  const mapStyle = showTraffic ? 'navigation-night-v1' : 'dark-v11';
+  const unitLabel = UNITS.find(u => u.key === unit)?.label ?? '1 Bedroom';
 
-  const neighborhoods = data?.neighborhoods?.filter(n =>
-    filter === 'all' ? true : n.affordability === filter
-  ) ?? [];
+  // Resolve each neighborhood's rent + affordability for the selected apartment size
+  const neighborhoods = (data?.neighborhoods ?? [])
+    .map(n => ({ ...n, rent: n.rents[unit], affordability: n.affordability[unit] }))
+    .filter(n => filter === 'all' ? true : n.affordability === filter);
 
   return (
     <section id="map" className="section map-section">
@@ -37,12 +43,31 @@ export default function MapSection({ cityId, onNeighborhoodSelect, selectedNeigh
         <p className="section-label">🗺️ Interactive Map Explorer</p>
         <h2 className="section-title">Neighborhood Affordability Map</h2>
         <p className="section-subtitle">
-          Click any dot to see rent details. Colors indicate affordability level.
+          Click any dot to see rent details. Colors compare each neighborhood's HUD {unitLabel.toLowerCase()} rent to the metro average.
         </p>
 
         <div className="map-wrapper">
           {/* Sidebar */}
           <aside className="map-sidebar">
+            {/* Apartment size (synced with the bar chart in the housing section) */}
+            <div className="card">
+              <div className="map-filter-group">
+                <span className="map-filter-label">Apartment Size</span>
+                <div className="toggle-group">
+                  {UNITS.map(u => (
+                    <button
+                      key={u.key}
+                      id={`unit-${u.key}`}
+                      className={`toggle-btn ${unit === u.key ? 'active' : ''}`}
+                      onClick={() => onUnitChange(u.key)}
+                    >
+                      {u.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Filters */}
             <div className="card">
               <div className="map-filter-group">
@@ -62,13 +87,39 @@ export default function MapSection({ cityId, onNeighborhoodSelect, selectedNeigh
               </div>
             </div>
 
+            {/* Traffic Layer */}
+            <div className="card">
+              <div className="map-filter-group">
+                <span className="map-filter-label">Live Traffic</span>
+                <div className="toggle-group">
+                  {[{ id: 'on', label: 'On', value: true }, { id: 'off', label: 'Off', value: false }].map(o => (
+                    <button
+                      key={o.id}
+                      id={`traffic-${o.id}`}
+                      className={`toggle-btn ${showTraffic === o.value ? 'active' : ''}`}
+                      onClick={() => setShowTraffic(o.value)}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Legend */}
             <div className="card">
               <span className="map-filter-label" style={{ marginBottom: '0.75rem', display: 'block' }}>Legend</span>
               <div className="map-legend">
-                <div className="legend-item"><div className="legend-dot" style={{ background: AFFORD_COLOR }} />Affordable (&lt; $1,500)</div>
-                <div className="legend-item"><div className="legend-dot" style={{ background: MODERATE_COLOR }} />Moderate ($1,500–$2,200)</div>
-                <div className="legend-item"><div className="legend-dot" style={{ background: EXPENSIVE_COLOR }} />Expensive (&gt; $2,200)</div>
+                <div className="legend-item"><div className="legend-dot" style={{ background: AFFORD_COLOR }} />Affordable (&gt;10% below metro avg.)</div>
+                <div className="legend-item"><div className="legend-dot" style={{ background: MODERATE_COLOR }} />Moderate (within 10%)</div>
+                <div className="legend-item"><div className="legend-dot" style={{ background: EXPENSIVE_COLOR }} />Expensive (&gt;10% above metro avg.)</div>
+                {showTraffic && (
+                  <>
+                    <div className="legend-item" style={{ marginTop: '0.5rem' }}><div className="legend-dot" style={{ background: '#4ade80' }} />Traffic: flowing</div>
+                    <div className="legend-item"><div className="legend-dot" style={{ background: '#fb923c' }} />Traffic: moderate</div>
+                    <div className="legend-item"><div className="legend-dot" style={{ background: '#ef4444' }} />Traffic: heavy / severe</div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -101,6 +152,11 @@ export default function MapSection({ cityId, onNeighborhoodSelect, selectedNeigh
                   ))}
                 </div>
               )}
+              {data && !data.hasZipData && (
+                <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: '0.75rem' }}>
+                  HUD doesn't publish ZIP-level rents for this metro, so every neighborhood shows the metro-wide 1-bedroom FMR.
+                </p>
+              )}
             </div>
           </aside>
 
@@ -112,9 +168,10 @@ export default function MapSection({ cityId, onNeighborhoodSelect, selectedNeigh
               style={{ height: '100%', width: '100%' }}
               zoomControl={true}
             >
-              {/* Mapbox Dark Theme (with Live Traffic) */}
+              {/* Mapbox Dark Theme (navigation style includes live traffic) */}
               <TileLayer
-                url={`https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`}
+                key={mapStyle}
+                url={`https://api.mapbox.com/styles/v1/mapbox/${mapStyle}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`}
                 attribution='Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
               />
               {city && <MapFlyTo center={[city.lat, city.lng]} />}
@@ -135,12 +192,12 @@ export default function MapSection({ cityId, onNeighborhoodSelect, selectedNeigh
                   <Popup>
                     <div style={{ fontFamily: 'Inter, sans-serif', minWidth: 180 }}>
                       <strong style={{ fontSize: '0.95rem' }}>{n.name}</strong><br />
-                      <span style={{ color: '#666', fontSize: '0.82rem' }}>Avg. Rent</span>
+                      <span style={{ color: '#666', fontSize: '0.82rem' }}>HUD {unitLabel} Fair Market Rent{n.isZipLevel ? ' (ZIP)' : ' (metro)'}</span>
                       <div style={{ fontSize: '1.1rem', fontWeight: 700, color: colorFor(n.affordability) }}>
                         ${n.rent.toLocaleString()}/mo
                       </div>
                       <div style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                        Affordability Score: <strong>{n.score}/100</strong>
+                        Affordability Score (1-BR): <strong>{n.score}/100</strong>
                       </div>
                     </div>
                   </Popup>
