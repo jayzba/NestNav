@@ -38,32 +38,7 @@ export default function TrafficSection({ cityId }) {
     },
   ] : [];
 
-  // Sparkline of real readings collected while this city is selected
-  const [history, setHistory] = useState([]);
-  useEffect(() => { setHistory([]); }, [cityId]);
-  useEffect(() => {
-    if (data) {
-      setHistory(h => [...h.slice(-9), {
-        time: new Date(data.fetchedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-        value: Number(data.avgCommute.value),
-      }]);
-    }
-  }, [data?.fetchedAt]);
 
-  const sparkData = {
-    labels: history.map(h => h.time),
-    datasets: [{
-      label: 'Commute (min)',
-      data: history.map(h => h.value),
-      borderColor: '#4e8df5',
-      backgroundColor: 'rgba(78,141,245,0.08)',
-      borderWidth: 2,
-      pointRadius: 3,
-      pointBackgroundColor: '#4e8df5',
-      fill: true,
-      tension: 0.4,
-    }],
-  };
 
   return (
     <section id="traffic" className="section">
@@ -121,40 +96,12 @@ export default function TrafficSection({ cityId }) {
               ))}
             </div>
 
-            {/* Commute Sparkline */}
-            <div className="card" style={{ marginTop: '0.25rem' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem' }}>
-                Commute Time History (Last 10 Readings, every 5 min)
-              </h3>
-              <div style={{ height: 200 }}>
-                <Line
-                  data={sparkData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { display: false },
-                    },
-                    scales: {
-                      x: { ticks: { color: '#4a6080', font: { size: 11 } }, grid: { color: 'rgba(99,155,255,0.05)' } },
-                      y: {
-                        ticks: { color: '#4a6080', font: { size: 11 }, callback: v => `${v}m` },
-                        grid: { color: 'rgba(99,155,255,0.05)' },
-                        suggestedMin: 0,
-                        beginAtZero: true,
-                      },
-                    },
-                  }}
-                />
-              </div>
-            </div>
-
             {/* Stored history: typical commute by time of day (Firestore) */}
             <TrafficProfile cityId={cityId} />
 
             {/* Disclaimer */}
             <p style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-              📡 Live driving times from Mapbox (neighborhoods → city center), refreshed every 5 minutes. Transit delays aren't included — add your city's GTFS Realtime feed for that.
+              📡 Live driving times from Mapbox (neighborhoods → city center). Transit delays aren't included — add your city's GTFS Realtime feed for that.
             </p>
           </>
         )}

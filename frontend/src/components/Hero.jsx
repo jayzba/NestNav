@@ -112,16 +112,16 @@ export default function Hero({ onCitySelect, selectedCity }) {
         </form>
 
         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-          Try: Austin, TX · Chicago, IL · Boston, MA · Seattle, WA
+          Try: Austin, TX · Dallas, TX · Denver, CO · New York, NY
         </p>
 
         <div className="hero-stats">
           <div className="hero-stat">
-            <div className="hero-stat-number">6</div>
+            <div className="hero-stat-number">4</div>
             <div className="hero-stat-label">Major Cities</div>
           </div>
           <div className="hero-stat">
-            <div className="hero-stat-number">36+</div>
+            <div className="hero-stat-number">24+</div>
             <div className="hero-stat-label">Neighborhoods</div>
           </div>
           <div className="hero-stat">

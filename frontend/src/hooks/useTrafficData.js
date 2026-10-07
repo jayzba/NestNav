@@ -56,8 +56,7 @@ export function useTrafficData(cityId) {
         .catch(e => { if (!cancelled) { setError(e.message); setLoading(false); } });
 
     refresh();
-    const id = setInterval(refresh, REFRESH_MS);
-    return () => { cancelled = true; clearInterval(id); };
+    return () => { cancelled = true; };
   }, [cityId]);
 
   return { data, loading, error };

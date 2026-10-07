@@ -42,7 +42,7 @@ export default function TrafficProfile({ cityId }) {
     labels: HOUR_LABELS,
     datasets: [
       {
-        label: 'Weekday',
+        label: 'Weekday commute',
         data: hours.weekday,
         borderColor: '#4e8df5',
         backgroundColor: 'rgba(78,141,245,0.1)',
@@ -50,7 +50,7 @@ export default function TrafficProfile({ cityId }) {
         borderWidth: 2, pointRadius: 3, tension: 0.4, fill: true, spanGaps: true,
       },
       {
-        label: 'Weekend',
+        label: 'Weekend commute',
         data: hours.weekend,
         borderColor: '#34d399',
         backgroundColor: 'rgba(52,211,153,0.06)',
@@ -99,7 +99,14 @@ export default function TrafficProfile({ cityId }) {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
-            plugins: { legend: { labels: { color: '#8fa8cc', font: { size: 12 } } } },
+            plugins: {
+              legend: { labels: { color: '#8fa8cc', font: { size: 12 } } },
+              tooltip: {
+                callbacks: {
+                  label: (context) => `${context.dataset.label}: ${Math.round(context.parsed.y)} min`
+                }
+              }
+            },
             scales: {
               x: { ticks: { color: '#4a6080', font: { size: 11 }, maxTicksLimit: 12 }, grid: { color: 'rgba(99,155,255,0.05)' } },
               y: {
