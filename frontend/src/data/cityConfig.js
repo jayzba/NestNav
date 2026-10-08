@@ -72,4 +72,100 @@ export const CITY_CONFIG = {
       { name: 'LIRR',            type: 'rail', frequency: '30 min', coverage: 'Long Island ↔ Penn Station' },
     ],
   },
+  la: {
+    hudEntityId: 'METRO31080M31080',
+    timeZone: 'America/Los_Angeles',
+    neighborhoods: [
+      { name: 'Santa Monica',     lat: 34.0195, lng: -118.4912, zip: '90401' },
+      { name: 'Pasadena',         lat: 34.1478, lng: -118.1445, zip: '91101' },
+      { name: 'Glendale',         lat: 34.1425, lng: -118.2551, zip: '91203' },
+      { name: 'Long Beach',       lat: 33.7701, lng: -118.1937, zip: '90802' },
+      { name: 'Inglewood',        lat: 33.9617, lng: -118.3531, zip: '90301' },
+      { name: 'Burbank',          lat: 34.1808, lng: -118.3090, zip: '91502' },
+    ],
+    transitRoutes: [
+      { name: 'Metro E Line',    type: 'rail', frequency: '12 min', coverage: 'Santa Monica ↔ Downtown LA' },
+      { name: 'Metro B Line',    type: 'rail', frequency: '15 min', coverage: 'North Hollywood ↔ Union Station' },
+    ],
+  },
+  chicago: {
+    hudEntityId: 'METRO16980M16980',
+    timeZone: 'America/Chicago',
+    neighborhoods: [
+      { name: 'Evanston',         lat: 42.0411, lng: -87.6901, zip: '60201' },
+      { name: 'Oak Park',         lat: 41.8850, lng: -87.7845, zip: '60302' },
+      { name: 'Des Plaines',      lat: 42.0334, lng: -87.8834, zip: '60016' },
+      { name: 'Cicero',           lat: 41.8456, lng: -87.7539, zip: '60804' },
+      { name: 'Skokie',           lat: 42.0324, lng: -87.7416, zip: '60076' },
+      { name: 'Oak Lawn',         lat: 41.7109, lng: -87.7400, zip: '60453' },
+    ],
+    transitRoutes: [
+      { name: 'CTA Red Line',    type: 'rail', frequency: '7 min',  coverage: 'Howard ↔ 95th/Dan Ryan' },
+      { name: 'CTA Blue Line',   type: 'rail', frequency: '10 min', coverage: 'O\'Hare ↔ Forest Park' },
+    ],
+  },
+  seattle: {
+    hudEntityId: 'METRO42660M42660',
+    timeZone: 'America/Los_Angeles',
+    neighborhoods: [
+      { name: 'Bellevue',         lat: 47.6101, lng: -122.2015, zip: '98004' },
+      { name: 'Redmond',          lat: 47.6739, lng: -122.1215, zip: '98052' },
+      { name: 'Renton',           lat: 47.4828, lng: -122.2170, zip: '98057' },
+      { name: 'Kirkland',         lat: 47.6768, lng: -122.2059, zip: '98033' },
+      { name: 'Lynnwood',         lat: 47.8209, lng: -122.3151, zip: '98036' },
+      { name: 'Kent',             lat: 47.3809, lng: -122.2348, zip: '98032' },
+    ],
+    transitRoutes: [
+      { name: 'Link 1 Line',     type: 'rail', frequency: '8 min',  coverage: 'Angle Lake ↔ Northgate' },
+      { name: 'RapidRide C',     type: 'bus',  frequency: '10 min', coverage: 'West Seattle ↔ Downtown' },
+    ],
+  },
+  miami: {
+    hudEntityId: 'METRO33100M33100',
+    timeZone: 'America/New_York',
+    neighborhoods: [
+      { name: 'Miami Beach',      lat: 25.7906, lng: -80.1300, zip: '33139' },
+      { name: 'Coral Gables',     lat: 25.7214, lng: -80.2683, zip: '33134' },
+      { name: 'Hialeah',          lat: 25.8575, lng: -80.2781, zip: '33012' },
+      { name: 'Hollywood',        lat: 26.0112, lng: -80.1494, zip: '33020' },
+      { name: 'Fort Lauderdale',  lat: 26.1224, lng: -80.1373, zip: '33301' },
+      { name: 'Doral',            lat: 25.8195, lng: -80.3553, zip: '33178' },
+    ],
+    transitRoutes: [
+      { name: 'Metrorail Green', type: 'rail', frequency: '15 min', coverage: 'Palmetto ↔ Dadeland South' },
+      { name: 'Metromover',      type: 'rail', frequency: '5 min',  coverage: 'Downtown Loop' },
+    ],
+  },
+  boston: {
+    hudEntityId: 'METRO14460M14460',
+    timeZone: 'America/New_York',
+    neighborhoods: [
+      { name: 'Cambridge',        lat: 42.3736, lng: -71.1097, zip: '02138' },
+      { name: 'Somerville',       lat: 42.3875, lng: -71.0995, zip: '02143' },
+      { name: 'Brookline',        lat: 42.3317, lng: -71.1211, zip: '02445' },
+      { name: 'Quincy',           lat: 42.2528, lng: -71.0022, zip: '02169' },
+      { name: 'Newton',           lat: 42.3370, lng: -71.2092, zip: '02458' },
+      { name: 'Malden',           lat: 42.4250, lng: -71.0661, zip: '02148' },
+    ],
+    transitRoutes: [
+      { name: 'MBTA Red Line',   type: 'rail', frequency: '10 min', coverage: 'Alewife ↔ Ashmont/Braintree' },
+      { name: 'MBTA Green Line', type: 'rail', frequency: '8 min',  coverage: 'Lechmere ↔ B/C/D/E' },
+    ],
+  },
+  atlanta: {
+    hudEntityId: 'METRO12060M12060',
+    timeZone: 'America/New_York',
+    neighborhoods: [
+      { name: 'Decatur',          lat: 33.7748, lng: -84.2963, zip: '30030' },
+      { name: 'Sandy Springs',    lat: 33.9304, lng: -84.3733, zip: '30328' },
+      { name: 'Marietta',         lat: 33.9526, lng: -84.5499, zip: '30060' },
+      { name: 'Alpharetta',       lat: 34.0753, lng: -84.2940, zip: '30009' },
+      { name: 'Roswell',          lat: 34.0232, lng: -84.3615, zip: '30075' },
+      { name: 'Smyrna',           lat: 33.8839, lng: -84.5143, zip: '30080' },
+    ],
+    transitRoutes: [
+      { name: 'MARTA Red Line',  type: 'rail', frequency: '15 min', coverage: 'North Springs ↔ Airport' },
+      { name: 'MARTA Gold Line', type: 'rail', frequency: '15 min', coverage: 'Doraville ↔ Airport' },
+    ],
+  },
 };

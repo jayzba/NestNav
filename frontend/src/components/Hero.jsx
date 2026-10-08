@@ -1,39 +1,27 @@
 import { useState } from 'react';
-import { CITIES } from '../data/mockData';
+import { CITIES } from '../data/cities';
 
 export default function Hero({ onCitySelect, selectedCity }) {
   const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleInput = (e) => {
-    const val = e.target.value;
-    setQuery(val);
-    if (val.length < 2) { setSuggestions([]); return; }
-    setSuggestions(
-      CITIES.filter(c => c.name.toLowerCase().includes(val.toLowerCase()))
-    );
-  };
+  const displayedCities = CITIES.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
 
   const handleSelect = (city) => {
     setQuery(city.name);
-    setSuggestions([]);
+    setShowDropdown(false);
     // App scrolls to the housing section once its data has finished loading
     onCitySelect(city.id, { scroll: true });
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (suggestions.length > 0) handleSelect(suggestions[0]);
-    else if (CITIES.find(c => c.name.toLowerCase() === query.toLowerCase())) {
-      const city = CITIES.find(c => c.name.toLowerCase() === query.toLowerCase());
-      handleSelect(city);
-    }
+    if (displayedCities.length > 0) handleSelect(displayedCities[0]);
   };
 
   return (
     <section id="hero" className="hero">
       <div className="hero-content">
-
 
         <h1 className="hero-title">
           Find Where to Live.<br />
@@ -52,13 +40,15 @@ export default function Hero({ onCitySelect, selectedCity }) {
               className="hero-search-input"
               placeholder="Search a city (e.g. Austin, TX)"
               value={query}
-              onChange={handleInput}
+              onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); }}
+              onFocus={() => setShowDropdown(true)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
               autoComplete="off"
               aria-label="Search for a city"
               aria-autocomplete="list"
-              aria-expanded={suggestions.length > 0}
+              aria-expanded={showDropdown && displayedCities.length > 0}
             />
-            {suggestions.length > 0 && (
+            {showDropdown && displayedCities.length > 0 && (
               <ul
                 role="listbox"
                 aria-label="City suggestions"
@@ -71,12 +61,13 @@ export default function Hero({ onCitySelect, selectedCity }) {
                   border: '1px solid var(--color-border-glow)',
                   borderRadius: 'var(--radius-md)',
                   listStyle: 'none',
-                  overflow: 'hidden',
+                  overflow: 'auto',
+                  maxHeight: '220px',
                   zIndex: 50,
                   boxShadow: 'var(--shadow-card)',
                 }}
               >
-                {suggestions.map(city => (
+                {displayedCities.map(city => (
                   <li key={city.id}>
                     <button
                       type="button"
@@ -109,13 +100,9 @@ export default function Hero({ onCitySelect, selectedCity }) {
           </button>
         </form>
 
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-          Try: Austin, TX · Dallas, TX · Denver, CO · New York, NY
-        </p>
-
         <div className="hero-stats">
           <div className="hero-stat">
-            <div className="hero-stat-number">4</div>
+            <div className="hero-stat-number">{CITIES.length}</div>
             <div className="hero-stat-label">Major Cities</div>
           </div>
           <div className="hero-stat">

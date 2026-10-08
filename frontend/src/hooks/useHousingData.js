@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CITIES } from '../data/mockData';
+import { CITIES } from '../data/cities';
 import { loadCityHousing } from '../lib/housing';
 import { fetchCachedHousing } from '../api/firestoreCache';
 

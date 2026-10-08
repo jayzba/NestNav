@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { useTrafficData } from '../hooks/useTrafficData';
-import { CITIES } from '../data/mockData';
+import { CITIES } from '../data/cities';
 import TrafficProfile from './TrafficProfile';
 
 const STATUS_LABEL = { good: 'Normal', moderate: 'Delays', bad: 'Disrupted' };

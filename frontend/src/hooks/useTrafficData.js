@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CITIES } from '../data/mockData';
+import { CITIES } from '../data/cities';
 import { CITY_CONFIG } from '../data/cityConfig';
 import { fetchCommuteSnapshot } from '../api/mapboxTraffic';
 
