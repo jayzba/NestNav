@@ -4,7 +4,6 @@ import Hero from './components/Hero.jsx';
 import HousingSection from './components/HousingSection.jsx';
 import MapSection from './components/MapSection.jsx';
 import TrafficSection from './components/TrafficSection.jsx';
-import DemoMode from './components/DemoMode.jsx';
 
 export default function App() {
   const [cityId, setCityId]                     = useState(null);
@@ -95,8 +94,6 @@ export default function App() {
           Transit data is for demonstration purposes only.
         </div>
       </footer>
-
-      <DemoMode onCitySelect={handleCitySelect} />
     </>
   );
 }
