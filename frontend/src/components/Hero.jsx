@@ -33,9 +33,7 @@ export default function Hero({ onCitySelect, selectedCity }) {
   return (
     <section id="hero" className="hero">
       <div className="hero-content">
-        <div className="hero-badge">
-          <span>🎓</span> Built for University Students
-        </div>
+
 
         <h1 className="hero-title">
           Find Where to Live.<br />

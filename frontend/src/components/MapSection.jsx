@@ -15,11 +15,11 @@ function colorFor(affordability) {
 }
 
 // Re-centers map when city changes
-function MapFlyTo({ center }) {
+function MapFlyTo({ cityId, center }) {
   const map = useMap();
   useEffect(() => {
     if (center) map.flyTo(center, 12, { duration: 1.5 });
-  }, [center, map]);
+  }, [cityId, map]);
   return null;
 }
 
@@ -174,7 +174,7 @@ export default function MapSection({ cityId, unit, onUnitChange, onNeighborhoodS
                 url={`https://api.mapbox.com/styles/v1/mapbox/${mapStyle}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`}
                 attribution='Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
               />
-              {city && <MapFlyTo center={[city.lat, city.lng]} />}
+              {city && <MapFlyTo cityId={city.id} center={[city.lat, city.lng]} />}
 
               {neighborhoods.map((n, i) => (
                 <CircleMarker
