@@ -19,7 +19,7 @@
 
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { CITIES } from '../frontend/src/data/mockData.js';
+import { CITIES } from '../frontend/src/data/cities.js';
 import { CITY_CONFIG } from '../frontend/src/data/cityConfig.js';
 import { fetchCommuteSnapshot } from '../frontend/src/api/mapboxTraffic.js';
 import { loadCityHousing } from '../frontend/src/lib/housing.js';
